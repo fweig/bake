@@ -1,0 +1,23 @@
+version=1.12.1
+archive="v${version}.tar.gz"
+upstream="https://github.com/ninja-build/ninja/archive/refs/tags/${archive}"
+
+do_fetch() {
+    wget -O "${archive}" "${upstream}"
+}
+
+do_unpack() {
+    bake-unpack-source "${archive}"
+}
+
+do_config() {
+    cmake -B ${builddir} -S ${sourcedir} --install-prefix ${destdir} -DBUILD_TESTING=OFF
+}
+
+do_build() {
+    cmake --build ${builddir}
+}
+
+do_install() {
+    cmake --install ${builddir}
+}
