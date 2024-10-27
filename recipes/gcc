@@ -1,0 +1,33 @@
+version=14.2.0
+archive="gcc-${version}.tar.gz"
+upstream="https://ftp.gnu.org/gnu/gcc/gcc-${version}/${archive}"
+
+do_fetch() {
+    wget -O "${archive}" "${upstream}"
+}
+
+do_unpack() {
+    bake-unpack-source "${archive}"
+}
+
+do_config() {
+    local _triplet="$(arch)-linux-gnu"
+    mkdir -p ${builddir}
+    cd ${builddir}
+    ${sourcedir}/configure -v \
+        --build="${_triplet}" \
+        --host="${_triplet}" \
+        --target="${_triplet}" \
+        --prefix="${destdir}" \
+        --enable-checking=release \
+        --enable-languages=c,c++ \
+        --disable-multilib
+}
+
+do_build() {
+    make
+}
+
+do_install() {
+    make install 
+}

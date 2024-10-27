@@ -1,0 +1,23 @@
+archive="boost_${version//./_}.tar.bz2"
+upstream="https://archives.boost.io/release/${version}/source/${archive}"
+
+do_fetch() {
+    wget "${upstream}"
+}
+
+do_unpack() {
+    mkdir -p source
+    tar xjf ${archive} -C source --strip-components=1
+}
+
+do_config() {
+    ./bootstrap.sh --prefix=${destdir}
+}
+
+do_build() {
+    ./b2 -j${njobs} --build-dir=${builddir}
+}
+
+do_install() {
+    ./b2 -j${njobs} --build-dir=${builddir} install
+}

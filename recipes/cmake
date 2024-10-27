@@ -1,0 +1,25 @@
+archive="v${version}.tar.gz"
+upstream="https://github.com/Kitware/CMake/archive/refs/tags/${archive}"
+
+do_fetch() {
+    wget -O "${archive}" "${upstream}"
+}
+
+do_unpack() {
+    bake-unpack-source ${archive}
+}
+
+do_config() {
+    mkdir -p ${builddir}
+    cd ${builddir}
+    ${sourcedir}/bootstrap --parallel=${njobs} --prefix=${destdir}
+    cd -
+}
+
+do_build() {
+    make -sC ${builddir} -j${njobs}
+}
+
+do_install() {
+    make -sC ${builddir} -j${njobs} install
+}
