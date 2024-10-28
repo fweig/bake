@@ -6,6 +6,7 @@ cachedir="$HOME/.cache/bake"
 njobs="$(getconf _NPROCESSORS_ONLN)"
 
 packageprefix="$HOME/.local/packages"
+envdir="$HOME/.local/environments"
 
 function bake-log {
     echo "$@"
@@ -121,6 +122,26 @@ function _clear {
     rm -r ${cachedir}
 }
 
+function _env_subshell_bashrc {
+    local envname="$1"
+    echo 'if [ -f ~/.bashrc ]; then'
+    echo '    source ~/.bashrc'
+    echo 'fi'
+    echo "BAKE_ENVIRONMENT=${envname}"
+    echo "BAKE_ROOT=${envdir}/${envname}"
+    echo 'PATH="${BAKE_ROOT}/bin:${PATH}"'
+    echo 'PS1="[${BAKE_ENVIRONMENT}] ${PS1}"'
+}
+
+function _enter_env {
+    if [[ -z $1 ]]; then
+        echo "Error: No environment specified"
+        exit 1
+    fi
+    local envname="$1"
+    bash --rcfile <(_env_subshell_bashrc $envname) -i
+}
+
 if [[ -z $1 ]]; then
     echo "Error: No command provided"
     exit 1
@@ -162,6 +183,10 @@ case $1 in
     install-only )
         shift
         _install_only $@
+        ;;
+    enter )
+        shift
+        _enter_env $@
         ;;
     * )
         echo "Unknow command '${1}'"
