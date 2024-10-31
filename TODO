@@ -1,0 +1,8 @@
+TODOs:
+    - packages don't have a version field
+    - add shortcut for `wget -O` to eliminate need for archive variable in recipe header
+    - clear: Print cache size before deleting
+    - 
+
+Missing packages:
+    - SDL
