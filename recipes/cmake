@@ -1,3 +1,4 @@
+i: ${version:=3.30.5}
 archive="v${version}.tar.gz"
 upstream="https://github.com/Kitware/CMake/archive/refs/tags/${archive}"
 

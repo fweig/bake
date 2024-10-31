@@ -1,3 +1,4 @@
+: ${version:=1.86.0}
 archive="boost_${version//./_}.tar.bz2"
 upstream="https://archives.boost.io/release/${version}/source/${archive}"
 

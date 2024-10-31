@@ -1,4 +1,4 @@
-version=14.2.0
+: ${version:=14.2.0}
 archive="gcc-${version}.tar.gz"
 upstream="https://ftp.gnu.org/gnu/gcc/gcc-${version}/${archive}"
 

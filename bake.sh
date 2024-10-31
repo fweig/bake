@@ -48,9 +48,18 @@ function _parse_package_name {
         echo "No package name provided"
         exit 1
     fi
-    package=${1%%/*}
-    version=${1##*/}
-    cachedir="${cachedir}/${package}/${version}"
+
+    if [[ "$1" =~ ^[a-zA-Z_]+\/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        # User specified package name + custom version
+        package=${1%%/*}
+        version=${1##*/}
+    elif [[ "$1" =~ ^[a-zA-Z_]+$ ]]; then
+        # User specified only package name -> use latest version
+        package=$1
+    else
+        echo "Error: Invalid package name '$1'"
+        exit 1
+    fi
 }
 
 function _prepare_package_cache {
@@ -58,14 +67,15 @@ function _prepare_package_cache {
 
     source recipes/${package}
 
-    mkdir -p ${cachedir}
-    cd ${cachedir}
-
+    cachedir="${cachedir}/${package}/${version}"
     sourcedir="${cachedir}/source"
     builddir="${cachedir}/build"
     destdir="${packageprefix}/${package}/${version}"
 
     export MAKEFLAGS="-sC${builddir} -j${njobs}"
+
+    mkdir -p ${cachedir}
+    cd ${cachedir}
 }
 
 function _fetch_only {
@@ -117,7 +127,7 @@ function _list_packages {
 }
 
 function _clear {
-    _parse_package_name $1
+    _prepare_package_cache $1
     bake-log "Deleting directory '${cachedir}'"
     rm -r ${cachedir}
 }
