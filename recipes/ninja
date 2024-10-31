@@ -1,13 +1,12 @@
 : ${version:=1.12.1}
-archive="v${version}.tar.gz"
-upstream="https://github.com/ninja-build/ninja/archive/refs/tags/${archive}"
+upstream="https://github.com/ninja-build/ninja/archive/refs/tags/v${version}.tar.gz"
 
 do_fetch() {
-    wget -O "${archive}" "${upstream}"
+    bake-fetch-source
 }
 
 do_unpack() {
-    bake-unpack-source "${archive}"
+    bake-unpack-source
 }
 
 do_config() {

@@ -12,9 +12,16 @@ function bake-log {
     echo "$@"
 }
 
+function bake-fetch-source {
+    if [[ -z $upstream ]]; then
+        echo "Error: 'upstream' variable not defined!"
+    fi
+    wget -O source.tar.gz "${upstream}"
+}
+
 function bake-unpack-source {
     mkdir -p source
-    tar xf ${1} -C source --strip-components=1
+    tar xf source.tar.gz -C source --strip-components=1
 }
 
 # Function to move cursor and print

@@ -1,13 +1,12 @@
 : ${version:=14.2.0}
-archive="gcc-${version}.tar.gz"
-upstream="https://ftp.gnu.org/gnu/gcc/gcc-${version}/${archive}"
+upstream="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz"
 
 do_fetch() {
-    wget -O "${archive}" "${upstream}"
+    bake-fetch-source
 }
 
 do_unpack() {
-    bake-unpack-source "${archive}"
+    bake-unpack-source
 }
 
 do_config() {
