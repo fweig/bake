@@ -170,6 +170,22 @@ function _enter_env {
     bash --rcfile <(_env_subshell_bashrc $envname) -i
 }
 
+function _bootstrap {
+    [[ -z $1 ]] && bake-fatal "No environment specified."
+    [[ -z $2 ]] && bake-fatal "No compiler specified."
+
+    env="$1"
+    compiler="$2"
+
+    [[ -d $1 ]] && bake-fatal "Environment '${env}' already exists."
+
+    env_root="${envdir}/${env}"
+    packageprefix="${env_root}/.packages"
+    mkdir -p $packageprefix
+
+    [[ "${compiler}" != "gcc" ]] && bake-fatal "Only 'gcc' is supported as bootstrap compiler at the moment."
+}
+
 [[ -z $1 ]] && bake-fatal "No command provided"
 
 case $1 in
@@ -208,6 +224,10 @@ case $1 in
     install-only )
         shift
         _install_only $@
+        ;;
+    bootstrap )
+        shift
+        _bootstrap $@
         ;;
     enter )
         shift
