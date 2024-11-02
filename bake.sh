@@ -12,6 +12,11 @@ function bake-log {
     echo "$@"
 }
 
+function bake-fatal {
+    echo "Error: $@"
+    exit 1
+}
+
 function bake-fetch-source {
     if [[ -z $upstream ]]; then
         echo "Error: 'upstream' variable not defined!"
@@ -64,10 +69,7 @@ function _run_install_step {
 }
 
 function _parse_package_name {
-    if [[ -z $1 ]]; then
-        echo "No package name provided"
-        exit 1
-    fi
+    [[ -z $1 ]] && bake-fatal "No package name provided"
 
     if [[ "$1" =~ ^[a-zA-Z_]+\/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         # User specified package name + custom version
@@ -77,8 +79,7 @@ function _parse_package_name {
         # User specified only package name -> use latest version
         package=$1
     else
-        echo "Error: Invalid package name '$1'"
-        exit 1
+        bake-fatal "Invalid package name '$1'"
     fi
 }
 
@@ -164,18 +165,12 @@ function _env_subshell_bashrc {
 }
 
 function _enter_env {
-    if [[ -z $1 ]]; then
-        echo "Error: No environment specified"
-        exit 1
-    fi
+    [[ -z $1 ]] && bake-fatal "No environment specified."
     local envname="$1"
     bash --rcfile <(_env_subshell_bashrc $envname) -i
 }
 
-if [[ -z $1 ]]; then
-    echo "Error: No command provided"
-    exit 1
-fi
+[[ -z $1 ]] && bake-fatal "No command provided"
 
 case $1 in
     clear )
@@ -219,6 +214,5 @@ case $1 in
         _enter_env $@
         ;;
     * )
-        echo "Unknow command '${1}'"
-        exit 1
+        bake-fatal "Unknown command '$1'"
 esac
