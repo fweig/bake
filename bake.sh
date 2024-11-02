@@ -186,53 +186,57 @@ function _bootstrap {
     [[ "${compiler}" != "gcc" ]] && bake-fatal "Only 'gcc' is supported as bootstrap compiler at the moment."
 }
 
-[[ -z $1 ]] && bake-fatal "No command provided"
+function _entry {
+    [[ -z $1 ]] && bake-fatal "No command provided"
 
-case $1 in
-    clear )
-        shift
-        _clear $@
-        ;;
-    list )
-        shift
-        _list_packages
-        ;;
-    install )
-        shift
-        _install $@
-        ;;
-    remove )
-        shift
-        _remove $@
-        ;;
-    fetch-only )
-        shift
-        _fetch_only $@
-        ;;
-    unpack-only )
-        shift
-        _unpack_only $@
-        ;;
-    config-only )
-        shift
-        _config_only $@
-        ;;
-    build-only )
-        shift
-        _build_only $@
-        ;;
-    install-only )
-        shift
-        _install_only $@
-        ;;
-    bootstrap )
-        shift
-        _bootstrap $@
-        ;;
-    enter )
-        shift
-        _enter_env $@
-        ;;
-    * )
-        bake-fatal "Unknown command '$1'"
-esac
+    case $1 in
+        clear )
+            shift
+            _clear $@
+            ;;
+        list )
+            shift
+            _list_packages
+            ;;
+        install )
+            shift
+            _install $@
+            ;;
+        remove )
+            shift
+            _remove $@
+            ;;
+        fetch-only )
+            shift
+            _fetch_only $@
+            ;;
+        unpack-only )
+            shift
+            _unpack_only $@
+            ;;
+        config-only )
+            shift
+            _config_only $@
+            ;;
+        build-only )
+            shift
+            _build_only $@
+            ;;
+        install-only )
+            shift
+            _install_only $@
+            ;;
+        bootstrap )
+            shift
+            _bootstrap $@
+            ;;
+        enter )
+            shift
+            _enter_env $@
+            ;;
+        * )
+            bake-fatal "Unknown command '$1'"
+    esac
+}
+
+_entry $@
