@@ -27,27 +27,40 @@ function bake-unpack-source {
 # Function to move cursor and print
 function _print_pinned_line {
     # Save cursor position
-    echo -en "\033[s"
+    tput sc
     # Move to top of screen
-    echo -en "\033[0;0H"
+    tput cup 0 0
+    # Set standout mode
+    tput smso
     # Print the pinned line
-    echo -en ">>> $1"
+    echo -n "> $1"
     # Clear to end of line
-    echo -en "\033[K"
+    tput el
+    # Exit standout mode
+    tput rmso
     # Restore cursor position
-    echo -en "\033[u"
+    tput rc
 }
 
 function _run_install_step {
-    command=$1
-    message=$2
+    # This should run the command and print a message at the top of the terminal
+    # to indicate what's happening.
+    # Works okayish, but doesn't look great with fast output and spams the console.
+    # Need a more involved approach, something like collecting output in a log file
+    # first and printing the tail to the console. Gives control over how many lines
+    # are shown.
+    $command
 
-    clear
-    _print_pinned_line "${message}"
-    $command | while IFS= read -r line; do
-        echo "$line"
-        _print_pinned_line "${message}"
-    done
+    # command=$1
+    # message=$2
+
+    # clear
+    # echo # Make space for pinned line
+    # _print_pinned_line "${message}"
+    # $command | while IFS= read -r line; do
+    #     echo "$line"
+    #     _print_pinned_line "${message}"
+    # done
 }
 
 function _parse_package_name {
@@ -87,12 +100,12 @@ function _prepare_package_cache {
 
 function _fetch_only {
     _prepare_package_cache $1
-    do_fetch
+    _run_install_step do_fetch "${package}/${version}: Fetching source..."
 }
 
 function _unpack_only {
     _prepare_package_cache $1
-    do_unpack
+    _run_install_step do_unpack "${package}/${version}: Unpacking source..."
 }
 
 function _config_only {
@@ -126,7 +139,7 @@ function _remove {
 }
 
 function _list_packages {
-    for dir in ${packageprefix}/*/*/ 
+    for dir in ${packageprefix}/*/*/
     do
         dir=${dir%*/}                       # remove the trailing "/"
         echo "${dir##${packageprefix}/}"    # print everything after the final "/"

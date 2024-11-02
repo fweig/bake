@@ -1,6 +1,8 @@
 TODOs:
+    - Add bootstrap command to create a new environment with compiler
     - clear: Print cache size before deleting
-    - 
+    - Collect build logs in file
+    - bash completion
 
 Missing packages:
     - SDL
