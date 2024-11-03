@@ -28,5 +28,13 @@ do_build() {
 }
 
 do_install() {
+    bake-cd build
     make install
+    bake-cd -
+}
+
+gcc_on_enter() {
+    echo 'export CC="${BAKE_ROOT}/bin/gcc"'
+    echo 'export CXX="${BAKE_ROOT}/bin/g++"'
+    echo 'export LD_RUN_PATH+=":${BAKE_ROOT}"'
 }

@@ -18,6 +18,7 @@ function bake-fatal {
 
 # Silent cd when using -
 function bake-cd {
+    [[ ! -d $1 && $1 != "-" ]] && bake-fatal "No such directory: '$1'"
     cd $1 &>/dev/null
 }
 
@@ -92,6 +93,13 @@ function _add_package_to_environment {
     find . -type d -exec mkdir -p "${BAKE_ROOT}/{}" \;
     find . -type f -exec ln {} "${BAKE_ROOT}/{}" \;
     bake-cd -
+
+    local on_enter_hook=${package}_on_enter
+    if [[ $(type -t ${on_enter_hook}) == function ]]; then
+        local hookfile=${BAKE_ROOT}/.on_enter/${package}
+        cat <(${on_enter_hook}) > $hookfile
+        source $hookfile
+    fi
 }
 
 function _prepare_environment_context {
@@ -186,6 +194,10 @@ function _env_subshell_bashrc {
     echo "export BAKE_ROOT=${envdir}/${envname}"
     echo 'export PATH="${BAKE_ROOT}/bin:${PATH}"'
     echo 'PS1="[${BAKE_ENVIRONMENT}] ${PS1}"'
+    echo 'for hook in $(find ${BAKE_ROOT}/.on_enter -type f)'
+    echo 'do'
+    echo '    source $hook'
+    echo 'done'
 }
 
 function _enter_env {
@@ -220,6 +232,7 @@ function _create {
     [[ -d $envroot ]] && bake-fatal "Environment '${envname}' already exists."
 
     mkdir -p $envroot/.packages
+    mkdir -p $envroot/.on_enter
     _enter_env $envname
 }
 
