@@ -10,13 +10,13 @@ do_unpack() {
 }
 
 do_config() {
-    local _triplet="$(arch)-linux-gnu"
+    local triplet="$(arch)-linux-gnu"
     mkdir -p ${builddir}
-    cd ${builddir}
+    bake-cd ${builddir}
     ${sourcedir}/configure -v \
-        --build="${_triplet}" \
-        --host="${_triplet}" \
-        --target="${_triplet}" \
+        --build="${triplet}" \
+        --host="${triplet}" \
+        --target="${triplet}" \
         --prefix="${destdir}" \
         --enable-checking=release \
         --enable-languages=c,c++ \
@@ -28,5 +28,5 @@ do_build() {
 }
 
 do_install() {
-    make install 
+    make install
 }
