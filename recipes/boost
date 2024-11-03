@@ -10,13 +10,19 @@ do_unpack() {
 }
 
 do_config() {
+    bake-cd ${sourcedir}
     ./bootstrap.sh --prefix=${destdir}
+    bake-cd -
 }
 
 do_build() {
+    bake-cd ${sourcedir}
     ./b2 -j${njobs} --build-dir=${builddir}
+    bake-cd -
 }
 
 do_install() {
+    bake-cd ${sourcedir}
     ./b2 -j${njobs} --build-dir=${builddir} install
+    bake-cd -
 }
