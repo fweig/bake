@@ -5,7 +5,6 @@ set -e
 cachedir="$HOME/.cache/bake"
 njobs="$(getconf _NPROCESSORS_ONLN)"
 
-packageprefix="$HOME/.local/packages"
 envdir="$HOME/.local/environments"
 
 function bake-log {
@@ -15,6 +14,11 @@ function bake-log {
 function bake-fatal {
     echo "Error: $@"
     exit 1
+}
+
+# Silent cd when using -
+function bake-cd {
+    cd $1 &>/dev/null
 }
 
 function bake-fetch-source {
@@ -54,10 +58,10 @@ function _run_install_step {
     # Need a more involved approach, something like collecting output in a log file
     # first and printing the tail to the console. Gives control over how many lines
     # are shown.
-    $command
+    command=$1
+    message=$2
 
-    # command=$1
-    # message=$2
+    $command
 
     # clear
     # echo # Make space for pinned line
@@ -83,12 +87,29 @@ function _parse_package_name {
     fi
 }
 
+function _add_package_to_environment {
+    bake-cd ${destdir}
+    find . -type d -exec mkdir -p "${BAKE_ROOT}/{}" \;
+    find . -type f -exec ln {} "${BAKE_ROOT}/{}" \;
+    bake-cd -
+}
+
+function _prepare_environment_context {
+    [[ -z ${BAKE_ENVIRONMENT} ]] && bake-fatal "Not in an environment. Use 'enter' to enter a environment first."
+    [[ -z $BAKE_ROOT ]] && bake-fatal "BAKE_ROOT not defined. Looks like the environment isn't setup properly. Aborting."
+
+    packageprefix=${BAKE_ROOT}/.packages
+}
+
 function _prepare_package_cache {
+
+    _prepare_environment_context
+
     _parse_package_name $1
 
     source recipes/${package}
 
-    cachedir="${cachedir}/${package}/${version}"
+    cachedir="${cachedir}/${BAKE_ENVIRONMENT}/${package}/${version}"
     sourcedir="${cachedir}/source"
     builddir="${cachedir}/build"
     destdir="${packageprefix}/${package}/${version}"
@@ -122,6 +143,7 @@ function _build_only {
 function _install_only {
     _prepare_package_cache $1
     _run_install_step do_install "${package}/${version}: Install..."
+    _add_package_to_environment
 }
 
 function _install {
@@ -131,6 +153,7 @@ function _install {
     _run_install_step do_config "${package}/${version}: Configuring..."
     _run_install_step do_build "${package}/${version}: Build..."
     _run_install_step do_install "${package}/${version}: Install..."
+    _add_package_to_environment
 }
 
 function _remove {
@@ -140,6 +163,7 @@ function _remove {
 }
 
 function _list_packages {
+    _prepare_environment_context
     for dir in ${packageprefix}/*/*/
     do
         dir=${dir%*/}                       # remove the trailing "/"
@@ -158,15 +182,17 @@ function _env_subshell_bashrc {
     echo 'if [ -f ~/.bashrc ]; then'
     echo '    source ~/.bashrc'
     echo 'fi'
-    echo "BAKE_ENVIRONMENT=${envname}"
-    echo "BAKE_ROOT=${envdir}/${envname}"
-    echo 'PATH="${BAKE_ROOT}/bin:${PATH}"'
+    echo "export BAKE_ENVIRONMENT=${envname}"
+    echo "export BAKE_ROOT=${envdir}/${envname}"
+    echo 'export PATH="${BAKE_ROOT}/bin:${PATH}"'
     echo 'PS1="[${BAKE_ENVIRONMENT}] ${PS1}"'
 }
 
 function _enter_env {
     [[ -z $1 ]] && bake-fatal "No environment specified."
     local envname="$1"
+    local envroot="${envdir}/${envname}"
+    [[ ! -d "${envroot}" ]] && bake-fatal "Couldn't find environment '${envname}'. Use 'create' to make a new environment."
     bash --rcfile <(_env_subshell_bashrc $envname) -i
 }
 
@@ -184,6 +210,17 @@ function _bootstrap {
     mkdir -p $packageprefix
 
     [[ "${compiler}" != "gcc" ]] && bake-fatal "Only 'gcc' is supported as bootstrap compiler at the moment."
+}
+
+function _create {
+    [[ -z $1 ]] && bake-fatal "No environment specified."
+    local envname="$1"
+    local envroot="${envdir}/${envname}"
+
+    [[ -d $envroot ]] && bake-fatal "Environment '${envname}' already exists."
+
+    mkdir -p $envroot/.packages
+    _enter_env $envname
 }
 
 function _entry {
@@ -229,6 +266,10 @@ function _entry {
         bootstrap )
             shift
             _bootstrap $@
+            ;;
+        create )
+            shift
+            _create $@
             ;;
         enter )
             shift
